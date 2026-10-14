@@ -1,0 +1,8 @@
+{
+  "name": "sample_texture",
+  "description": "P5 テクスチャ検証用。sample_material に加えてテクスチャの取り込み（importTextures）を有効にする。textureParameterMap は project_default から継承する（BaseColor / Normal / ORM / Emissive はマスターマテリアル M_OnePochi_Base に実在することを実測済み）",
+  "extends": "sample_material",
+  "material": {
+    "importTextures": true
+  }
+}

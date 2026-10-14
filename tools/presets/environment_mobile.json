@@ -1,0 +1,20 @@
+{
+  "name": "environment_mobile",
+  "description": "背景（Switch/モバイル）。Nanite OFF / コレクションの手動 LOD を使用",
+  "extends": "environment",
+  "staticMesh": {
+    "nanite": {
+      "enabled": false
+    },
+    "lod": {
+      "mode": "manual"
+    },
+    "lightmap": {
+      "resolution": 64
+    }
+  },
+  "limits": {
+    "maxMaterialSlots": 4,
+    "maxTextureResolution": 2048
+  }
+}

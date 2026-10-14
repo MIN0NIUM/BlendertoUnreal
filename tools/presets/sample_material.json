@@ -1,0 +1,11 @@
+{
+  "name": "sample_material",
+  "description": "P5 の検証用。sample_debug に加えて MI の自動生成（createInstances）を有効にする",
+  "extends": "sample_debug",
+  "material": {
+    "mode": "createInstances",
+    "masterMaterialPath": "/Game/_Dev/Materials/M_OnePochi_Base",
+    "instancePath": null,
+    "importTextures": false
+  }
+}

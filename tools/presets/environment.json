@@ -1,0 +1,21 @@
+{
+  "name": "environment",
+  "description": "背景（PC/PS5）。Nanite ON / Fallback 用に LOD 自動生成",
+  "extends": "project_default",
+  "destination": {
+    "pathTemplate": "{contentRoot}/Environment/{assetName}"
+  },
+  "staticMesh": {
+    "nanite": {
+      "enabled": true,
+      "fallbackRelativeError": 1.0
+    },
+    "lod": {
+      "mode": "auto",
+      "autoLodCount": 3
+    },
+    "lightmap": {
+      "resolution": 128
+    }
+  }
+}

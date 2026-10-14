@@ -1,0 +1,51 @@
+# ワンポチツール .gitignore
+#
+# 方針: 「ツール本体・仕様・ドキュメント」だけを管理する。
+#       サンプル（.blend / テクスチャ）と検証用 UE プロジェクトは手元にだけ置く。
+#       生成物・キャッシュ・個人環境も管理しない。
+# 迷ったら「ツールを実行すれば作り直せるか？」で判断する（作り直せる → ignore）。
+
+# ---------- Python ----------
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+
+# ---------- Blender ----------
+# 自動バックアップ（.blend1 / .blend2 ...）と保存中の一時ファイル
+*.blend[0-9]
+*.blend@
+
+# ---------- ビルド成果物 ----------
+# tools/build_addon_zip.py の出力先（ZIP は再生成できる）
+dist/
+
+# ---------- 実行時の一時ファイル ----------
+# プローブ / テストの出力先。tools が書き込む。docs から名前で参照されているが、実行すれば再生成できる
+# （`docs/tmp/` ではなく `/*` にしているのは、後から `!docs/tmp/<ファイル名>` で 1 件だけ
+#  残せるようにするため。ディレクトリごと除外すると例外が効かない）
+docs/tmp/*
+# run_roundtrip_test.py が実行のたびに書き換える。絶対パスを含むので共有しない
+tools/ue_plugin/job.json
+
+# ---------- サンプル（手元のみ） ----------
+# .blend の入力、テクスチャ（Megascans 由来を含む / ライセンス未確認）、生成された FBX・レポート
+samples/
+
+# ---------- 検証用 UE プロジェクト（手元のみ） ----------
+# 開発用の UEProject/OnePochiPlayground。Config も含めて管理しない。
+# ダウンロードした人は自分のプロジェクトに tools/setup_ue_project.bat で設定を入れる
+UEProject/
+
+# ---------- エディタ / OS ----------
+.vs/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# ---------- Claude Code ----------
+# settings.json と hooks/ はプロジェクト共有の設定なので管理する。個人用の上書きだけ除外
+.claude/settings.local.json

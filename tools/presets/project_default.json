@@ -1,0 +1,171 @@
+{
+  "name": "project_default",
+  "description": "プロジェクト共通の既定値。すべてのプリセットの親",
+  "destination": {
+    "environment": "dev",
+    "environments": {
+      "dev": {
+        "contentRoot": "/Game/_Dev",
+        "pathWhitelist": [
+          "/Game/_Dev"
+        ]
+      },
+      "production": {
+        "contentRoot": "/Game",
+        "pathWhitelist": [
+          "/Game"
+        ]
+      }
+    },
+    "pathTemplate": "{contentRoot}/{assetName}",
+    "allowOverwrite": true
+  },
+  "dccLayout": {
+    "fbxSubdir": "fbx",
+    "texturesSubdir": "textures",
+    "substanceSubdir": "substance",
+    "houdiniSubdir": "houdini",
+    "manifestName": "onepochi.json",
+    "reportName": "ue_report.json"
+  },
+  "material": {
+    "mode": "none",
+    "masterMaterialPath": null,
+    "instancePath": null,
+    "importTextures": false,
+    "textureParameterMap": {
+      "_BC": "BaseColor",
+      "_D": "BaseColor",
+      "_N": "Normal",
+      "_ORM": "ORM",
+      "_M": "Metallic",
+      "_R": "Roughness",
+      "_AO": "AmbientOcclusion",
+      "_E": "Emissive",
+      "_MSK": "Mask"
+    }
+  },
+  "limits": {
+    "maxBones": 256,
+    "maxBoneInfluences": 8,
+    "maxMaterialSlots": 8,
+    "maxCollisionTrianglesPerShape": 32,
+    "maxTextureResolution": 4096,
+    "weightNormalizationTolerance": 0.001
+  },
+  "staticMesh": {
+    "nanite": {
+      "enabled": false,
+      "fallbackRelativeError": 1.0
+    },
+    "lod": {
+      "mode": "none"
+    },
+    "collision": {
+      "simple": "fromDCC",
+      "complexMode": "default"
+    },
+    "lightmap": {
+      "coordinateIndex": 1,
+      "resolution": 64,
+      "generateIfMissing": true
+    },
+    "buildSettings": {
+      "recomputeNormals": false,
+      "recomputeTangents": true,
+      "removeDegenerates": true,
+      "generateDistanceField": true,
+      "buildScale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "vertexColor": {
+      "import": true,
+      "mode": "replace"
+    }
+  },
+  "skeleton": {
+    "mode": "create_new",
+    "assetPath": null,
+    "assetName": null,
+    "compatibilityMode": "exact",
+    "rootBoneName": "root"
+  },
+  "physicsAsset": {
+    "create": false
+  },
+  "skeletalMesh": {
+    "morphTargets": {
+      "import": true
+    },
+    "maxBoneInfluences": 8,
+    "importContentType": "all",
+    "thresholds": {
+      "position": 2e-05,
+      "tangentNormal": 2e-05,
+      "uv": 0.000977
+    },
+    "updateSkeletonReferencePose": false,
+    "vertexColor": {
+      "import": false
+    }
+  },
+  "reimportPolicy": {
+    "mode": "preserveSettings",
+    "override": []
+  },
+  "validation": {
+    "strict": false,
+    "allowLeadingDigitInNames": false,
+    "autoFix": true
+  },
+  "export": {
+    "triangulate": true,
+    "applyModifiers": true,
+    "fbx": {
+      "global_scale": 1.0,
+      "apply_unit_scale": true,
+      "apply_scale_options": "FBX_SCALE_NONE",
+      "use_space_transform": true,
+      "bake_space_transform": false,
+      "axis_forward": "-Z",
+      "axis_up": "Y",
+      "use_mesh_modifiers": true,
+      "mesh_smooth_type": "FACE",
+      "use_subsurf": false,
+      "use_mesh_edges": false,
+      "use_tspace": false,
+      "use_triangles": false,
+      "use_custom_props": false,
+      "add_leaf_bones": false,
+      "primary_bone_axis": "Y",
+      "secondary_bone_axis": "X",
+      "armature_nodetype": "NULL",
+      "use_armature_deform_only": true,
+      "bake_anim": false,
+      "path_mode": "AUTO",
+      "embed_textures": false,
+      "batch_mode": "OFF",
+      "use_metadata": true,
+      "colors_type": "SRGB",
+      "prioritize_active_color": true,
+      "check_existing": false
+    }
+  },
+  "ue": {
+    "remoteControlUrl": "http://127.0.0.1:30010",
+    "timeoutSeconds": 180,
+    "autoImport": false
+  },
+  "_notes": [
+    "fbx 以下のキーは bpy.ops.export_scene.fbx の引数名。実行時に実際のオペレータのプロパティと照合してフィルタされる",
+    "apply_scale_options / axis_forward / axis_up / primary_bone_axis は要検証（docs/12_座標系実測.md で確定）",
+    "bake_space_transform は Blender 側で experimental 扱いのため false 固定を推奨",
+    "colors_type / prioritize_active_color / check_existing は Blender 5.2 実測で存在を確認済み（docs/12）",
+    "destination.environments で Dev / 本番を切り替える（R-2）。pathTemplate の {contentRoot} が環境ごとに展開される",
+    "dccLayout は DCC データフォルダの構造（R-1）。アセットフォルダ直下の onepochi_asset.json でアセット単位に上書きできる",
+    "use_armature_deform_only=true はウェイトの無いボーンを削除する。root が消えないよう V-062 で root の use_deform を検証する"
+  ]
+}

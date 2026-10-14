@@ -1,0 +1,19 @@
+{
+  "name": "prop",
+  "description": "小物（Static Mesh）。Nanite OFF / LOD なし",
+  "extends": "project_default",
+  "destination": {
+    "pathTemplate": "{contentRoot}/Props/{assetName}"
+  },
+  "staticMesh": {
+    "nanite": {
+      "enabled": false
+    },
+    "lod": {
+      "mode": "none"
+    },
+    "lightmap": {
+      "resolution": 64
+    }
+  }
+}

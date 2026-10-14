@@ -1,0 +1,14 @@
+{
+  "name": "character_mobile",
+  "description": "キャラクター（Switch/モバイル）。影響ボーン数 4 / しきい値を厳しく",
+  "extends": "character",
+  "skeletalMesh": {
+    "maxBoneInfluences": 4
+  },
+  "limits": {
+    "maxBones": 128,
+    "maxBoneInfluences": 4,
+    "maxMaterialSlots": 4,
+    "maxTextureResolution": 2048
+  }
+}

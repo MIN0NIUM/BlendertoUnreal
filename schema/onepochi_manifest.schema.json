@@ -1,0 +1,1360 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/onepochi/manifest/0.3.1",
+  "title": "OnePochi Manifest",
+  "description": "DCC -> Unreal Engine 5.8 メッシュインポート用マニフェスト (v0.3.1)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "runId",
+    "generator",
+    "coordinateSystem",
+    "source",
+    "destination",
+    "validation",
+    "assets"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^0\\.3\\.\\d+$"
+    },
+    "runId": {
+      "type": "string",
+      "pattern": "^\\d{8}_\\d{6}_[0-9a-f]{6}$"
+    },
+    "preset": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "generator": {
+      "$ref": "#/$defs/generator"
+    },
+    "coordinateSystem": {
+      "$ref": "#/$defs/coordinateSystem"
+    },
+    "source": {
+      "$ref": "#/$defs/source"
+    },
+    "destination": {
+      "$ref": "#/$defs/destination"
+    },
+    "material": {
+      "$ref": "#/$defs/materialPolicy"
+    },
+    "limits": {
+      "$ref": "#/$defs/limits"
+    },
+    "validation": {
+      "$ref": "#/$defs/validation"
+    },
+    "assets": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/staticMeshAsset"
+          },
+          {
+            "$ref": "#/$defs/skeletalMeshAsset"
+          },
+          {
+            "$ref": "#/$defs/animationSequenceAsset"
+          }
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "vec3": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "number"
+      }
+    },
+    "uePackagePath": {
+      "type": "string",
+      "pattern": "^/[A-Za-z_][A-Za-z0-9_]*(/[A-Za-z_][A-Za-z0-9_]*)*$",
+      "description": "UE のパッケージパス (例: /Game/_Dev/Props/Crate_01)。各セグメントは英字または _ で始まる"
+    },
+    "ueAssetName": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "先頭英字・A-Za-z0-9_ のみ (docs/04 §0 N-1, N-2)"
+    },
+    "dccName": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+      "description": "DCC 側のオブジェクト / コレクション / ボーン名。先頭英字・A-Za-z0-9_ のみ"
+    },
+    "materialName": {
+      "type": "string",
+      "pattern": "^M_[A-Za-z][A-Za-z0-9_]*$",
+      "description": "マテリアル名は M_<名前> 形式が必須 (Q-19)。違反は書き出し時にエラー"
+    },
+    "generator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dcc",
+        "dccVersion",
+        "toolVersion",
+        "exportedAt"
+      ],
+      "properties": {
+        "dcc": {
+          "enum": [
+            "blender",
+            "houdini",
+            "other"
+          ]
+        },
+        "dccVersion": {
+          "type": "string"
+        },
+        "toolVersion": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "exportedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "user": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "coordinateSystem": {
+      "description": "座標系・単位の変換記録。UE 側はこの値と実際のインポート設定が矛盾したらインポートを中断する",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceUpAxis",
+        "sourceForwardAxis",
+        "sourceUnitInMeters",
+        "targetUpAxis",
+        "targetForwardAxis",
+        "appliedScale",
+        "conversionDoneBy"
+      ],
+      "properties": {
+        "sourceUpAxis": {
+          "enum": [
+            "X",
+            "-X",
+            "Y",
+            "-Y",
+            "Z",
+            "-Z"
+          ]
+        },
+        "sourceForwardAxis": {
+          "enum": [
+            "X",
+            "-X",
+            "Y",
+            "-Y",
+            "Z",
+            "-Z"
+          ]
+        },
+        "sourceUnitInMeters": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "targetUpAxis": {
+          "enum": [
+            "X",
+            "-X",
+            "Y",
+            "-Y",
+            "Z",
+            "-Z"
+          ]
+        },
+        "targetForwardAxis": {
+          "enum": [
+            "X",
+            "-X",
+            "Y",
+            "-Y",
+            "Z",
+            "-Z"
+          ]
+        },
+        "appliedScale": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "DCC 側で既に掛けた倍率。100.0 なら UE 側の Import Uniform Scale は 1.0 にする"
+        },
+        "conversionDoneBy": {
+          "enum": [
+            "fbx_exporter",
+            "tool",
+            "none"
+          ]
+        },
+        "fbxExportSettings": {
+          "type": "object",
+          "description": "実際に使った FBX エクスポータ設定の記録（再現性のため）",
+          "additionalProperties": true
+        }
+      }
+    },
+    "source": {
+      "description": "アセット元データの所在 (docs/90 §2-3)",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assetName",
+        "assetFolder",
+        "dccFile"
+      ],
+      "properties": {
+        "assetName": {
+          "$ref": "#/$defs/dccName"
+        },
+        "assetFolder": {
+          "type": "string",
+          "description": "アセットフォルダの絶対パス"
+        },
+        "dccFile": {
+          "type": "string",
+          "description": "assetFolder からの相対パス (例: Crate_01.blend)"
+        },
+        "textureFolder": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "assetFolder からの相対パス (既定 textures)"
+        }
+      }
+    },
+    "destination": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contentRoot",
+        "defaultPath"
+      ],
+      "properties": {
+        "contentRoot": {
+          "$ref": "#/$defs/uePackagePath"
+        },
+        "environment": {
+          "type": "string",
+          "enum": [
+            "dev",
+            "production"
+          ],
+          "description": "書き出し時に選択されていた環境 (R-2)。contentRoot と pathWhitelist はこの環境から決まる。UE 側はこれをレポートに残す"
+        },
+        "defaultPath": {
+          "$ref": "#/$defs/uePackagePath"
+        },
+        "allowOverwrite": {
+          "type": "boolean",
+          "default": true
+        },
+        "pathWhitelist": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/uePackagePath"
+          },
+          "description": "この配下以外への書き込みを UE 側が拒否する（事故防止）。空なら制限なし"
+        }
+      }
+    },
+    "materialPolicy": {
+      "description": "マテリアルの扱い (Q-19)",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode"
+      ],
+      "properties": {
+        "mode": {
+          "enum": [
+            "none",
+            "assignExisting",
+            "createInstances"
+          ],
+          "description": "none=生成も割当もしない / assignExisting=同名の既存マテリアルを割当 / createInstances=マスターから MI を生成して割当"
+        },
+        "masterMaterialPath": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "mode=createInstances のとき必須。Blender UI で指定可"
+        },
+        "instancePath": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "MI の出力先。null なら destination.defaultPath/Materials"
+        },
+        "importTextures": {
+          "type": "boolean",
+          "default": false
+        },
+        "textureParameterMap": {
+          "type": "object",
+          "description": "テクスチャサフィックス -> MI のパラメータ名 (例: {\"_BC\": \"BaseColor\"})",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "createInstances"
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          },
+          "then": {
+            "required": [
+              "masterMaterialPath"
+            ],
+            "properties": {
+              "masterMaterialPath": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "limits": {
+      "description": "この実行で使ったしきい値の記録。超過は警告であり中断しない (Q-06)",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "maxBones": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "maxBoneInfluences": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "maxMaterialSlots": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "maxCollisionTrianglesPerShape": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "maxTextureResolution": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "weightNormalizationTolerance": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "ranAt",
+        "ruleSetVersion",
+        "issues"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "passed",
+            "passedWithWarnings",
+            "failed"
+          ]
+        },
+        "ranAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ruleSetVersion": {
+          "type": "string"
+        },
+        "issues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "ruleId",
+              "severity",
+              "message"
+            ],
+            "properties": {
+              "ruleId": {
+                "type": "string",
+                "pattern": "^V-\\d{3}[a-z]?$"
+              },
+              "severity": {
+                "enum": [
+                  "error",
+                  "warning",
+                  "info"
+                ]
+              },
+              "target": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "message": {
+                "type": "string"
+              },
+              "autoFixed": {
+                "type": "boolean",
+                "default": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "reimportPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode"
+      ],
+      "properties": {
+        "mode": {
+          "enum": [
+            "preserveSettings",
+            "overwriteAll"
+          ]
+        },
+        "override": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "nanite",
+              "lod",
+              "collision",
+              "lightmap",
+              "materials",
+              "sockets",
+              "buildSettings"
+            ]
+          },
+          "default": []
+        }
+      }
+    },
+    "materialSlot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "index",
+        "slotName"
+      ],
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "slotName": {
+          "$ref": "#/$defs/materialName"
+        },
+        "ueMaterialPath": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "解決済みの UE マテリアル / MI パス。null なら UE 側で解決"
+        },
+        "textures": {
+          "type": "object",
+          "description": "サフィックス -> textureFolder からの相対パス",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "socket": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "location",
+        "rotation",
+        "scale"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/ueAssetName"
+        },
+        "parentBone": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "location": {
+          "$ref": "#/$defs/vec3",
+          "description": "UE 座標系・cm 単位の最終値"
+        },
+        "rotation": {
+          "$ref": "#/$defs/vec3",
+          "description": "オイラー角 (度), UE 座標系"
+        },
+        "scale": {
+          "$ref": "#/$defs/vec3"
+        }
+      }
+    },
+    "staticMeshAsset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "assetType",
+        "name",
+        "destinationPath",
+        "sourceFile",
+        "staticMesh"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "assetType": {
+          "const": "StaticMesh"
+        },
+        "name": {
+          "$ref": "#/$defs/ueAssetName"
+        },
+        "destinationPath": {
+          "$ref": "#/$defs/uePackagePath"
+        },
+        "sourceFile": {
+          "type": "string",
+          "description": "マニフェストからの相対パス"
+        },
+        "sourceNode": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "中間ファイル内のノード名"
+        },
+        "sourceCollection": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Blender 側のコレクション名"
+        },
+        "reimportPolicy": {
+          "$ref": "#/$defs/reimportPolicy"
+        },
+        "materialSlots": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/materialSlot"
+          }
+        },
+        "stats": {
+          "$ref": "#/$defs/meshStats"
+        },
+        "staticMesh": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "nanite": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "fallbackRelativeError": {
+                  "type": "number",
+                  "minimum": 0,
+                  "default": 1.0
+                }
+              }
+            },
+            "lod": {
+              "description": "LOD はコレクション方式 (docs/04 §2.2)。LOD ごとに別 FBX を出力する",
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "mode"
+              ],
+              "properties": {
+                "mode": {
+                  "enum": [
+                    "none",
+                    "auto",
+                    "manual"
+                  ]
+                },
+                "autoLodCount": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 8,
+                  "description": "mode=auto のとき生成する LOD 数"
+                },
+                "levels": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "level",
+                      "sourceFile"
+                    ],
+                    "properties": {
+                      "level": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "sourceFile": {
+                        "type": "string",
+                        "description": "この LOD の FBX。マニフェストからの相対パス"
+                      },
+                      "sourceCollection": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "例: LOD1"
+                      },
+                      "sourceNode": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "screenSize": {
+                        "type": [
+                          "number",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 2
+                      },
+                      "triangleCount": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "この LOD の三角形数 (v0.3.1 で追加 / 省略可)。宣言があると UE 側が実測値と厳密比較する"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "collision": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "simple"
+              ],
+              "properties": {
+                "simple": {
+                  "enum": [
+                    "fromDCC",
+                    "auto",
+                    "none"
+                  ]
+                },
+                "shapes": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "type",
+                      "sourceNode"
+                    ],
+                    "properties": {
+                      "type": {
+                        "enum": [
+                          "convex",
+                          "box",
+                          "sphere",
+                          "capsule"
+                        ]
+                      },
+                      "sourceNode": {
+                        "type": "string"
+                      },
+                      "triangleCount": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0
+                      }
+                    }
+                  }
+                },
+                "complexMode": {
+                  "enum": [
+                    "default",
+                    "simpleAsComplex",
+                    "complexAsSimple"
+                  ],
+                  "default": "default"
+                }
+              }
+            },
+            "lightmap": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "coordinateIndex": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 7,
+                  "default": 1
+                },
+                "resolution": {
+                  "type": "integer",
+                  "minimum": 4,
+                  "maximum": 4096,
+                  "default": 64
+                },
+                "generateIfMissing": {
+                  "type": "boolean",
+                  "default": true
+                }
+              }
+            },
+            "buildSettings": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "recomputeNormals": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "recomputeTangents": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "removeDegenerates": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "generateDistanceField": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "buildScale": {
+                  "$ref": "#/$defs/vec3"
+                }
+              }
+            },
+            "vertexColor": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "import": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "mode": {
+                  "enum": [
+                    "replace",
+                    "ignore",
+                    "override"
+                  ],
+                  "default": "replace"
+                }
+              }
+            },
+            "sockets": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/socket"
+              }
+            }
+          }
+        }
+      }
+    },
+    "meshStats": {
+      "description": "実測値の記録。予算監視とリグレッション検知に使う",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "vertexCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "triangleCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "uvChannelCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "boundsMinCm": {
+          "$ref": "#/$defs/vec3"
+        },
+        "boundsMaxCm": {
+          "$ref": "#/$defs/vec3"
+        },
+        "dimensionsCm": {
+          "$ref": "#/$defs/vec3"
+        }
+      }
+    },
+    "skeletalMeshAsset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "assetType",
+        "name",
+        "destinationPath",
+        "sourceFile",
+        "skeleton",
+        "skeletalMesh"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "assetType": {
+          "const": "SkeletalMesh"
+        },
+        "name": {
+          "$ref": "#/$defs/ueAssetName"
+        },
+        "destinationPath": {
+          "$ref": "#/$defs/uePackagePath"
+        },
+        "sourceFile": {
+          "type": "string"
+        },
+        "sourceNode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sourceCollection": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reimportPolicy": {
+          "$ref": "#/$defs/reimportPolicy"
+        },
+        "materialSlots": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/materialSlot"
+          }
+        },
+        "stats": {
+          "$ref": "#/$defs/meshStats"
+        },
+        "skeleton": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "rootBoneName",
+            "boneCount"
+          ],
+          "properties": {
+            "mode": {
+              "enum": [
+                "create_new",
+                "reuse"
+              ]
+            },
+            "assetPath": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "mode=reuse のとき必須"
+            },
+            "assetName": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "mode=create_new のとき使用"
+            },
+            "compatibilityMode": {
+              "enum": [
+                "exact",
+                "subset"
+              ],
+              "default": "exact",
+              "description": "exact=ボーン階層の完全一致を要求 (量産時) / subset=既存 Skeleton の部分集合なら許可 (試行錯誤時)。Q-09"
+            },
+            "rootBoneName": {
+              "type": "string",
+              "default": "root"
+            },
+            "boneCount": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "boneNames": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "boneHierarchy": {
+              "type": "array",
+              "description": "(親ボーン名 or null, ボーン名) のペアを階層順に並べたもの。互換判定の根拠",
+              "items": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            },
+            "boneHierarchyHash": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "sha1:<hex>。boneHierarchy から算出"
+            },
+            "sourceArmature": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "Blender 側の Armature オブジェクト名（追跡用）"
+            },
+            "bones": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/bone"
+              },
+              "description": "ボーンごとの詳細。UE 側の実測と突き合わせる"
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "mode": {
+                    "const": "reuse"
+                  }
+                },
+                "required": [
+                  "mode"
+                ]
+              },
+              "then": {
+                "required": [
+                  "assetPath"
+                ],
+                "properties": {
+                  "assetPath": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "physicsAsset": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "create": {
+              "type": "boolean",
+              "default": false
+            },
+            "assetName": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "skeletalMesh": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "morphTargets": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "import": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "names": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "basisName": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "Shape Key の先頭ブロック名。**UE には渡らない**（基準形状として扱われる）。'Basis' でない場合は V-075 で警告する"
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "maxBoneInfluences": {
+              "enum": [
+                4,
+                8,
+                12,
+                0
+              ],
+              "default": 8,
+              "description": "0 = unlimited"
+            },
+            "importContentType": {
+              "enum": [
+                "all",
+                "geometry",
+                "skinningWeights"
+              ],
+              "default": "all"
+            },
+            "thresholds": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "position": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "tangentNormal": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "uv": {
+                  "type": "number",
+                  "minimum": 0
+                }
+              }
+            },
+            "updateSkeletonReferencePose": {
+              "type": "boolean",
+              "default": false
+            },
+            "vertexColor": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "import": {
+                  "type": "boolean",
+                  "default": false
+                }
+              }
+            },
+            "sockets": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/socket"
+              }
+            },
+            "animation": {
+              "description": "同時に書き出したアニメーションへの参照 (Q-08: 将来対応。現時点では定義のみ)",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "exportedSequences": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "description": "assets[].id への参照"
+                  }
+                }
+              }
+            },
+            "skin": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/skinStats"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "animationSequenceAsset": {
+      "description": "Q-08: 将来対応。スキーマ上の席のみ確保。UE 側は現時点では未実装のため warning を返して skip する",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "assetType",
+        "name",
+        "destinationPath",
+        "sourceFile",
+        "animationSequence"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "assetType": {
+          "const": "AnimationSequence"
+        },
+        "name": {
+          "$ref": "#/$defs/ueAssetName"
+        },
+        "destinationPath": {
+          "$ref": "#/$defs/uePackagePath"
+        },
+        "sourceFile": {
+          "type": "string"
+        },
+        "sourceNode": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Armature オブジェクト名"
+        },
+        "sourceAction": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Blender の Action 名"
+        },
+        "reimportPolicy": {
+          "$ref": "#/$defs/reimportPolicy"
+        },
+        "animationSequence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "skeletonAssetPath"
+          ],
+          "properties": {
+            "skeletonAssetPath": {
+              "type": "string",
+              "minLength": 1
+            },
+            "frameRange": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "start",
+                "end"
+              ],
+              "properties": {
+                "start": {
+                  "type": "integer"
+                },
+                "end": {
+                  "type": "integer"
+                }
+              }
+            },
+            "frameRate": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "importBoneTracks": {
+              "type": "boolean",
+              "default": true
+            },
+            "importCurves": {
+              "type": "boolean",
+              "default": true
+            },
+            "importMorphTargetCurves": {
+              "type": "boolean",
+              "default": false
+            },
+            "removeRedundantKeys": {
+              "type": "boolean",
+              "default": true
+            },
+            "interpolationType": {
+              "enum": [
+                "linear",
+                "constant",
+                "cubic"
+              ],
+              "default": "linear"
+            },
+            "rootMotion": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enableRootMotion": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "rootMotionLockType": {
+                  "enum": [
+                    "refPose",
+                    "animFirstFrame",
+                    "zero"
+                  ],
+                  "default": "refPose"
+                },
+                "forceRootLock": {
+                  "type": "boolean",
+                  "default": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "bone": {
+      "description": "ボーン1本。座標は UE 系 (cm)。DCC 側の予測値で、UE 側の実測と突き合わせる",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "parent",
+        "index"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "parent": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "useDeform": {
+          "type": "boolean",
+          "default": true
+        },
+        "isLeaf": {
+          "type": "boolean",
+          "description": "子を持たないボーン。**FBX は関節の位置しか持たないため、末端ボーンの長さは往復で保存されない**（実測: 0.25m -> 0.35m）。UE 側の検証では isLeaf の lengthCm を比較対象にしてはいけない"
+        },
+        "lengthCm": {
+          "type": "number",
+          "minimum": 0
+        },
+        "headCm": {
+          "$ref": "#/$defs/vec3"
+        },
+        "tailCm": {
+          "$ref": "#/$defs/vec3"
+        },
+        "rotation": {
+          "$ref": "#/$defs/vec3",
+          "description": "rest 姿勢のオイラー角 (度)。**要検証**: UE 側の実測が未了"
+        }
+      }
+    },
+    "skinStats": {
+      "description": "スキンウェイトの実測。V-068 / V-069 / V-070 / V-071 の根拠",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "vertexCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unassignedVertexCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "ウェイトが無い頂点。UE では原点に吸い寄せられる (V-068)"
+        },
+        "zeroWeightVertexCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "notNormalizedVertexCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "合計が 1.0 でない頂点。**書き出し時に複製側で正規化される**ため、FBX 内では 0 になる (V-069)"
+        },
+        "worstWeightTotal": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "maxWeightDeviation": {
+          "type": "number",
+          "minimum": 0
+        },
+        "maxInfluencesPerVertex": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "bonesWithoutWeight": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

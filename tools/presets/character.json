@@ -1,0 +1,32 @@
+{
+  "name": "character",
+  "description": "キャラクター（Skeletal Mesh）。Skeleton 新規作成 / Physics Asset は作らない",
+  "extends": "project_default",
+  "destination": {
+    "pathTemplate": "{contentRoot}/Characters/{assetName}"
+  },
+  "skeleton": {
+    "mode": "create_new",
+    "compatibilityMode": "exact",
+    "rootBoneName": "root"
+  },
+  "physicsAsset": {
+    "create": false
+  },
+  "skeletalMesh": {
+    "maxBoneInfluences": 8,
+    "morphTargets": {
+      "import": true
+    }
+  },
+  "export": {
+    "fbx": {
+      "object_types": [
+        "MESH",
+        "ARMATURE"
+      ],
+      "use_armature_deform_only": true,
+      "add_leaf_bones": false
+    }
+  }
+}

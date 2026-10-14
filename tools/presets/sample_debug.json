@@ -1,0 +1,13 @@
+{
+  "name": "sample_debug",
+  "description": "samples/ 配下の検証用。先頭数字の命名を許容し、_Dev/Samples に出力",
+  "extends": "prop",
+  "destination": {
+    "pathTemplate": "{contentRoot}/Samples/{assetName}",
+    "environment": "dev"
+  },
+  "validation": {
+    "allowLeadingDigitInNames": true,
+    "strict": false
+  }
+}
