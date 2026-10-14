@@ -7,7 +7,7 @@
 DCCツール（主に Blender）から Unreal Engine 5.8 へ Static Mesh / Skeletal Mesh を
 ワンボタンで取り込むパイプラインツール「ワンポチツール」の設計・実装。
 
-**スコープ外**: UE 上での GC 化、キャラクターセットアップ（ABP / Control Rig / IK Rig / Retarget）、
+**スコープ外**: UE 上での GC（ジオメトリコレクション）化、キャラクターセットアップ（ABP / Control Rig / IK Rig / Retarget）、
 アニメーションのオーサリング、レベル配置。
 
 ## まず読むもの

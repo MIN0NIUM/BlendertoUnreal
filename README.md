@@ -27,7 +27,7 @@ DCCツールで作成したメッシュを **ボタン一つで Unreal Engine 5.
 - バリデーションとエラーレポート
 
 ### 対象外（Out of Scope）
-- Unreal Engine 上での **GC（ゲームキャラクター）化**
+- Unreal Engine 上での **GC（ジオメトリコレクション）化**
 - Unreal Engine 上での **キャラクターセットアップ**（ABP/Control Rig/IK Rig/Retarget 等）
 - アニメーションのオーサリング
 - レベル配置・ゲームプレイロジック
